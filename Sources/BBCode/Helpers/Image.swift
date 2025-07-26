@@ -205,8 +205,8 @@ public struct ImagePreviewer: View {
                     dismiss()
                 }
             }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .frame(idealWidth: proxy.size.width, idealHeight: proxy.size.height)
+            .aspectRatio(proxy.size.width / proxy.size.height, contentMode: .fill)
+            .frame(maxHeight: .infinity)
             .edgesIgnoringSafeArea(.all)
         }
     }
@@ -284,7 +284,11 @@ public struct ImagePreviewer: View {
         var body: some View {
             VStack {
                 ImageView(url: URL(string: "https://images.cnblogs.com/cnblogs_com/blogs/770567/galleries/2319749/o_250711175155_111.gif")!)
-                ImagePreviewer(url: URL(string: "https://images.cnblogs.com/cnblogs_com/blogs/770567/galleries/2319749/o_250711175155_111.gif")!)
+                
+                VStack {
+                    ImagePreviewer(url: URL(string: "https://images.cnblogs.com/cnblogs_com/blogs/770567/galleries/2319749/o_250711175155_111.gif")!)
+                }
+                .background(.blue)
             }
             .frame(width: 600, height: 900)
         }

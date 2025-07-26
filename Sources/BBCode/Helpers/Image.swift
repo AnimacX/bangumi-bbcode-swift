@@ -104,7 +104,7 @@ struct ImageView: View {
         .transition(.fade(duration: 0.25))
         .scaledToFit()
         .frame(maxWidth: width)
-        .padding(5)
+        .padding(2.5)
         .onTapGesture {
             if failed {
                 return

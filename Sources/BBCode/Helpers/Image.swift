@@ -136,6 +136,7 @@ struct ImageView: View {
     #else
       .sheet(isPresented: $showPreview) {
         ImagePreviewer(url: url)
+              .frame(maxWidth: .infinity, maxHeight: .infinity)
       }
     #endif
   }

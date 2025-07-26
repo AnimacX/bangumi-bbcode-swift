@@ -132,8 +132,8 @@ struct ImageView: View {
                     } label: {
                         Label("预览", systemImage: "eye")
                     }
-                    ShareLink(item: url)
                 }
+                ShareLink(item: url)
             }
         }
 #if os(iOS)

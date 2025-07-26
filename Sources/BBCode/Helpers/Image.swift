@@ -159,6 +159,7 @@ struct ImageView: View {
 
 public struct ImagePreviewer: View {
     let url: URL
+    var contentMode: ContentMode = .fit
     
     @State private var scale: CGFloat = 1
     @State private var lastScale: CGFloat = 1
@@ -180,7 +181,7 @@ public struct ImagePreviewer: View {
                 WebImage(url: url) { image in
                     image
                         .resizable()
-                        .aspectRatio(contentMode: .fit)
+                        .aspectRatio(contentMode: contentMode)
                 } placeholder: {
                     if failed {
                         Image(systemName: "exclamationmark.triangle")

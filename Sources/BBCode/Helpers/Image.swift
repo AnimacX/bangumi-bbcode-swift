@@ -200,7 +200,7 @@ public struct ImagePreviewer: View {
 
         // To minimize jittering
         if abs(1 - delta) > 0.01 {
-          scale *= delta
+          scale = max(scale * delta, 0.05)
         }
       }
       .onEnded { _ in
@@ -251,4 +251,11 @@ public struct ImagePreviewer: View {
     }
     self.lastTranslation = .zero
   }
+}
+
+#Preview {
+    VStack {
+        ImagePreviewer(url: URL(string: "https://images.cnblogs.com/cnblogs_com/blogs/770567/galleries/2319749/o_250711175155_111.gif")!)
+    }
+    .frame(width: 600, height: 900)
 }

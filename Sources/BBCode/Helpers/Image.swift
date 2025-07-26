@@ -206,6 +206,7 @@ public struct ImagePreviewer: View {
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .frame(idealWidth: proxy.size.width, idealHeight: proxy.size.height)
             .edgesIgnoringSafeArea(.all)
         }
     }

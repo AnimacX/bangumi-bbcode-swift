@@ -205,8 +205,7 @@ public struct ImagePreviewer: View {
                     dismiss()
                 }
             }
-            .aspectRatio(proxy.size.width / proxy.size.height, contentMode: .fill)
-            .frame(maxHeight: .infinity)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
             .edgesIgnoringSafeArea(.all)
         }
     }

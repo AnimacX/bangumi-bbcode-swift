@@ -24,7 +24,6 @@ struct MaskView<Content: View>: View {
       .background(MaskTextColor.hide.color)
       .foregroundColor(color.color)
       .cornerRadius(2)
-      .shadow(color: MaskTextColor.hide.color, radius: 2)
       .animation(.default, value: color)
       .onHover { hovered in
         if hovered {

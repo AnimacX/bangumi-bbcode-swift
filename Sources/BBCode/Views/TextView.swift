@@ -55,7 +55,11 @@ public struct BBCodeView: View {
     exit(0)
     [/code]
     (bgm38) (bgm24)
-    [quote]引用的片段[/quote]
+    [quote][b]AnimacX 说[/b]引用的片段\r\n再说了[/quote]
+    ABCDEFGIGABCDEFGIGABCDEFGIGABCDEFGIGABCDEFGIGABCDEFGIGABCDEFGIG
+    [quote][b]不吃洋葱zzz[/b] 说: 还好我是声优厨[/quote]
+    [quote]对于我这种完全记不住声音的人来说[img]https://static.hya.moe/execwb-demo.mp4[/img]\r\n你这简直就是外挂(bgm38)\r\n你这简直就是外挂(bgm38)[/quote]
+    对于我这种完全记不住声音的人来说\r\n你这简直就是外挂(bgm38)
     [photo=104569]4b/d1/873244_3p4I7.jpg[/photo]
     [subject=12]ちぃでかける[/subject]
     [user=873244]五月雨[/user]

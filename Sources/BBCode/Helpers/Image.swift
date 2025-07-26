@@ -112,7 +112,7 @@ struct ImageView: View {
             if !BBCodeContext.shared.image.enableImagePreviewer {
                 return
             }
-            showPreview = true
+            openImagePreviewer()
         }
         .contextMenu {
             if BBCodeContext.shared.image.enableContextMenu {
@@ -129,7 +129,7 @@ struct ImageView: View {
                 }
                 if BBCodeContext.shared.image.enableImagePreviewer {
                     Button {
-                        showPreview = true
+                        openImagePreviewer()
                     } label: {
                         Label("预览", systemImage: "eye")
                     }
@@ -146,6 +146,14 @@ struct ImageView: View {
             ImagePreviewer(url: url)
         }
 #endif
+    }
+    
+    private func openImagePreviewer() {
+        if BBCodeContext.shared.image.delegateImagePreviwer {
+            BBCodeContext.shared.image.imagePreviewerDelegate(url)
+            return
+        }
+        showPreview = true
     }
 }
 

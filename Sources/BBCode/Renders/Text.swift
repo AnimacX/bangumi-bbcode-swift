@@ -33,7 +33,7 @@ extension Node {
                         strings.removeAll()
                     }
                     texts.append(content)
-                case let .view(content):
+                case let .view(content, _):
                     if !strings.isEmpty {
                         texts.append(Text(strings.reduce(AttributedString(), +)))
                         strings.removeAll()
@@ -80,6 +80,8 @@ extension Node {
 
 @MainActor
 var textRenders: [BBType: TextRender] {
+    let inQuoteKey = "inQuote";
+    
     return [
         .plain: { (n: Node, _: [String: Any]?) in
                 .string(AttributedString(n.value))
@@ -106,7 +108,7 @@ var textRenders: [BBType: TextRender] {
                 return .string(content)
             case let .text(content):
                 return .text(content)
-            case let .view(content):
+            case let .view(content, _):
                 return .view(content)
             }
         },
@@ -117,7 +119,7 @@ var textRenders: [BBType: TextRender] {
                 return .string(content)
             case let .text(content):
                 return .text(content)
-            case let .view(content):
+            case let .view(content, _):
                 return .view(content)
             }
         },
@@ -128,7 +130,7 @@ var textRenders: [BBType: TextRender] {
                 inner = AnyView(Text(content))
             case let .text(content):
                 inner = AnyView(content)
-            case let .view(content):
+            case let .view(content, _):
                 inner = content
             }
             return .view(
@@ -156,7 +158,7 @@ var textRenders: [BBType: TextRender] {
                 inner = AnyView(Text(content))
             case let .text(content):
                 inner = AnyView(content)
-            case let .view(content):
+            case let .view(content, _):
                 inner = content
             }
             return .view(
@@ -174,7 +176,7 @@ var textRenders: [BBType: TextRender] {
                 inner = AnyView(Text(content))
             case let .text(content):
                 inner = AnyView(content)
-            case let .view(content):
+            case let .view(content, _):
                 inner = content
             }
             return .view(
@@ -192,7 +194,7 @@ var textRenders: [BBType: TextRender] {
                 inner = AnyView(Text(content))
             case let .text(content):
                 inner = AnyView(content)
-            case let .view(content):
+            case let .view(content, _):
                 inner = content
             }
             return .view(
@@ -210,7 +212,7 @@ var textRenders: [BBType: TextRender] {
                 inner = AnyView(Text(content))
             case let .text(content):
                 inner = AnyView(content)
-            case let .view(content):
+            case let .view(content, _):
                 inner = content
             }
             switch n.attr.lowercased() {
@@ -249,7 +251,7 @@ var textRenders: [BBType: TextRender] {
                 inner = AnyView(Text(content))
             case let .text(content):
                 inner = AnyView(content)
-            case let .view(content):
+            case let .view(content, _):
                 inner = content
             }
             return .view(
@@ -271,7 +273,9 @@ var textRenders: [BBType: TextRender] {
             before.foregroundColor = .secondary.opacity(0.5)
             var after = AttributedString(" \u{201D}")
             after.foregroundColor = .secondary.opacity(0.5)
-            switch n.renderInnerText(args) {
+            var innerArgs = args ?? [:]
+            innerArgs[inQuoteKey] = true
+            switch n.renderInnerText(innerArgs) {
             case let .string(content):
                 var inner = AttributedString(content.characters.filter({ !$0.isNewline }))
                 inner.foregroundColor = .secondary
@@ -294,7 +298,7 @@ var textRenders: [BBType: TextRender] {
                         .padding(.bottom, 2.5)
                     )
                 )
-            case let .view(content):
+            case let .view(content, _):
                 return .view(
                     AnyView(
                         HStack(alignment: .top, spacing: 4) {
@@ -325,7 +329,7 @@ var textRenders: [BBType: TextRender] {
                     return .string(content)
                 case let .text(content):
                     return .text(content)
-                case let .view(content):
+                case let .view(content, _):
                     return .view(content)
                 }
             }
@@ -342,7 +346,7 @@ var textRenders: [BBType: TextRender] {
                         }.foregroundStyle(Color(hex: 0x0084B4))
                     )
                 )
-            case let .view(content):
+            case let .view(content, _):
                 return .view(
                     AnyView(
                         Link(destination: link) {
@@ -370,7 +374,7 @@ var textRenders: [BBType: TextRender] {
                     return .string(content)
                 case let .text(content):
                     return .text(content)
-                case let .view(content):
+                case let .view(content, _):
                     return .view(content)
                 }
             }
@@ -388,7 +392,7 @@ var textRenders: [BBType: TextRender] {
                         }.foregroundStyle(Color(hex: 0x0084B4))
                     )
                 )
-            case let .view(content):
+            case let .view(content, _):
                 return .view(
                     AnyView(
                         Link(destination: link) {
@@ -415,7 +419,7 @@ var textRenders: [BBType: TextRender] {
                     return .string(content)
                 case let .text(content):
                     return .text(content)
-                case let .view(content):
+                case let .view(content, _):
                     return .view(content)
                 }
             }
@@ -432,7 +436,7 @@ var textRenders: [BBType: TextRender] {
                         }.foregroundStyle(Color(hex: 0x0084B4))
                     )
                 )
-            case let .view(content):
+            case let .view(content, _):
                 return .view(
                     AnyView(
                         Link(destination: link) {
@@ -443,6 +447,9 @@ var textRenders: [BBType: TextRender] {
             }
         },
         .image: { (n: Node, args: [String: Any]?) in
+            if let inQuote = args?[inQuoteKey] as? Bool, inQuote {
+                return .text(Text(""))
+            }
             switch n.renderInnerText(args) {
             case let .string(content):
                 let url = String(content.characters)
@@ -469,11 +476,12 @@ var textRenders: [BBType: TextRender] {
                             AnyView(
                                 ImageView(url: link)
                                     .frame(maxWidth: CGFloat(width), maxHeight: CGFloat(height))
-                            )
+                            ),
+                            .image
                         )
                     }
                 }
-                return .view(AnyView(ImageView(url: link)))
+                return .view(AnyView(ImageView(url: link)), .image)
             default:
                 return .string(AttributedString(n.value))
             }
@@ -503,7 +511,7 @@ var textRenders: [BBType: TextRender] {
                 return .string(content)
             case let .text(content):
                 return .text(content.bold())
-            case let .view(content):
+            case let .view(content, _):
                 return .view(
                     AnyView(
                         content.bold()
@@ -523,7 +531,7 @@ var textRenders: [BBType: TextRender] {
                 return .string(content)
             case let .text(content):
                 return .text(content.italic())
-            case let .view(content):
+            case let .view(content, _):
                 return .view(
                     AnyView(
                         content.italic()
@@ -539,7 +547,7 @@ var textRenders: [BBType: TextRender] {
                 return .string(content)
             case let .text(content):
                 return .text(content.underline())
-            case let .view(content):
+            case let .view(content, _):
                 return .view(
                     AnyView(
                         content.underline()
@@ -555,7 +563,7 @@ var textRenders: [BBType: TextRender] {
                 return .string(content)
             case let .text(content):
                 return .text(content.strikethrough())
-            case let .view(content):
+            case let .view(content, _):
                 return .view(
                     AnyView(
                         content.strikethrough()
@@ -576,7 +584,7 @@ var textRenders: [BBType: TextRender] {
                 return .string(content)
             case let .text(content):
                 return .text(content.foregroundColor(color))
-            case let .view(content):
+            case let .view(content, _):
                 return .view(
                     AnyView(
                         content.foregroundColor(color)
@@ -604,7 +612,7 @@ var textRenders: [BBType: TextRender] {
                 return .string(content)
             case let .text(content):
                 return .text(content.font(.system(size: CGFloat(size))))
-            case let .view(content):
+            case let .view(content, _):
                 return .view(
                     AnyView(
                         content.font(.system(size: CGFloat(size)))
@@ -613,6 +621,9 @@ var textRenders: [BBType: TextRender] {
             }
         },
         .mask: { (n: Node, args: [String: Any]?) in
+            if let inQuote = args?[inQuoteKey] as? Bool, inQuote {
+                return .text(Text(""))
+            }
             var inner: Text = Text("")
             switch n.renderInnerText(args) {
             case let .string(content):
@@ -627,10 +638,13 @@ var textRenders: [BBType: TextRender] {
                     MaskView {
                         inner
                     }
-                )
+                ), .mask
             )
         },
-        .smilies: { (n: Node, _: [String: Any]?) in
+        .smilies: { (n: Node, args: [String: Any]?) in
+            if let inQuote = args?[inQuoteKey] as? Bool, inQuote {
+                return .text(Text(""))
+            }
             let img = Image(packageResource: "bgm\(n.attr)", ofType: "gif")
             return .text(Text(img))
         },

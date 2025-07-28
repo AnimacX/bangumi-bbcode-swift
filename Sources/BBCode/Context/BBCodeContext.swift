@@ -9,4 +9,5 @@ public final class BBCodeContext {
     @MainActor public static let shared = BBCodeContext()
     
     public let image = ImageContext()
+    public let mask = MaskContext()
 }

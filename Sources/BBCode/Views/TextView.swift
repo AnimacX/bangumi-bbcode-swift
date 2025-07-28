@@ -17,7 +17,7 @@ public struct BBCodeView: View {
     case .text(let content):
       content
         .font(.system(size: CGFloat(textSize)))
-    case .view(let content):
+    case .view(let content, _):
       content
         .font(.system(size: CGFloat(textSize)))
     }
@@ -34,7 +34,7 @@ public struct BBCodeView: View {
     [center]居中文字[/center]
     [left]居左文字[/left]
     [right]居右文字[/right]
-    我是[mask]马赛克文字[/mask]
+    我是[mask]马赛克文字(bgm24)[/mask]
     我是[color=red]彩[/color][color=green]色[/color][color=blue]的[/color][color=orange]哟[/color]
     [size=10]不同[/size][size=14]大小的[/size][size=18]文字[/size]效果也可实现
     Bangumi 番组计划: [url]https://chii.in/[/url]
@@ -55,7 +55,7 @@ public struct BBCodeView: View {
     exit(0)
     [/code]
     (bgm38) (bgm24)
-    [quote][b]AnimacX 说[/b]引用的片段\r\n再说了[/quote]
+    [quote][b]AnimacX 说[/b]引用的片段\r\n再说了[img]https://static.hya.moe/execwb-demo.avif[/img][/quote]
     ABCDEFGIGABCDEFGIGABCDEFGIGABCDEFGIGABCDEFGIGABCDEFGIGABCDEFGIG
     [quote][b]不吃洋葱zzz[/b] 说: 还好我是声优厨[/quote]
     [quote]对于我这种完全记不住声音的人来说[img]https://static.hya.moe/execwb-demo.mp4[/img]\r\n你这简直就是外挂(bgm38)\r\n你这简直就是外挂(bgm38)[/quote]

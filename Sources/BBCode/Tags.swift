@@ -6,7 +6,7 @@ typealias TextRender = (Node, [String: Any]?) -> TextView
 typealias PlainRender = (Node, [String: Any]?) -> String
 
 enum TextView {
-  case view(AnyView)
+  case view(AnyView, BBType? = nil)
   case text(Text)
   case string(AttributedString)
 }

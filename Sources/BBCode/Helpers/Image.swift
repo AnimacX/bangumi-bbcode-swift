@@ -156,10 +156,10 @@ struct ImageView: View {
         showPreview = true
     }
 }
-
 public struct ImagePreviewer: View {
     let url: URL
     let contentMode: ContentMode
+    let onImageLoaded: ((CGSize) -> Void)
     
     @State private var scale: CGFloat = 1
     @State private var lastScale: CGFloat = 1
@@ -171,41 +171,45 @@ public struct ImagePreviewer: View {
     
     @Environment(\.dismiss) private var dismiss
     
-    public init(url: URL, contentMode: ContentMode = .fit) {
+    @State private var imageSize: CGSize? = nil
+    
+    public init(url: URL, contentMode: ContentMode = .fit, onImageLoaded: @escaping ((CGSize) -> Void) = { _ in }) {
         self.url = url
         self.contentMode = contentMode
+        self.onImageLoaded = onImageLoaded
     }
     
     public var body: some View {
         GeometryReader { proxy in
-            ZStack {
-                WebImage(url: url) { image in
-                    image
-                        .resizable()
-                        .aspectRatio(contentMode: contentMode)
-                } placeholder: {
-                    if failed {
-                        Image(systemName: "exclamationmark.triangle")
-                            .font(.system(size: 40))
-                            .foregroundColor(.red)
-                    } else {
-                        ProgressView()
-                    }
-                }
-                .onFailure { _ in
-                    failed = true
-                }
-                .indicator(.activity)
-                .transition(.fade(duration: 0.25))
-                .scaleEffect(scale)
-                .offset(x: offset.x, y: offset.y)
-                .gesture(makeDragGesture(size: proxy.size))
-                .gesture(makeMagnificationGesture(size: proxy.size))
-                .onTapGesture {
-                    dismiss()
+            WebImage(url: url) { image in
+                image
+                    .resizable()
+                    .aspectRatio(contentMode: contentMode)
+            } placeholder: {
+                if failed {
+                    Image(systemName: "exclamationmark.triangle")
+                        .font(.system(size: 40))
+                        .foregroundColor(.red)
+                } else {
+                    ProgressView()
                 }
             }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .onSuccess { image, _, _ in
+                onImageLoaded(image.size)
+            }
+            .onFailure { _ in
+                failed = true
+            }
+            .indicator(.activity)
+            .padding(0)
+            .transition(.fade(duration: 0.25))
+            .scaleEffect(scale)
+            .offset(x: offset.x, y: offset.y)
+            .gesture(makeDragGesture(size: proxy.size))
+            .gesture(makeMagnificationGesture(size: proxy.size))
+            .onTapGesture {
+                dismiss()
+            }
             .edgesIgnoringSafeArea(.all)
         }
     }

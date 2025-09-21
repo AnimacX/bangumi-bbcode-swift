@@ -159,7 +159,8 @@ struct ImageView: View {
 public struct ImagePreviewer: View {
     let url: URL
     let contentMode: ContentMode
-    let onImageLoaded: ((CGSize) -> Void)
+    
+    public var onImageLoaded: ((CGSize) -> Void) = { _ in }
     
     @State private var scale: CGFloat = 1
     @State private var lastScale: CGFloat = 1
@@ -173,10 +174,9 @@ public struct ImagePreviewer: View {
     
     @State private var imageSize: CGSize? = nil
     
-    public init(url: URL, contentMode: ContentMode = .fit, onImageLoaded: @escaping ((CGSize) -> Void) = { _ in }) {
+    public init(url: URL, contentMode: ContentMode = .fit) {
         self.url = url
         self.contentMode = contentMode
-        self.onImageLoaded = onImageLoaded
     }
     
     public var body: some View {

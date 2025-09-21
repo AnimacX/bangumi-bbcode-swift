@@ -213,7 +213,7 @@ public struct ImagePreviewer: View {
     private func makeMagnificationGesture(size: CGSize) -> some Gesture {
         MagnificationGesture()
             .onChanged { value in
-                let delta = value / lastScale
+                let delta = lastScale == 0 ? 0 : value / lastScale
                 lastScale = value
                 
                 // To minimize jittering

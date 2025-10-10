@@ -28,14 +28,14 @@ extension Image {
 
 struct ImageView: View {
     let url: URL
-    
+
     @State private var width: CGFloat?
     @State private var showPreview = false
     @State private var failed = false
-    
+
     @State private var currentZoom = 0.0
     @State private var totalZoom = 1.0
-    
+
     init(url: URL) {
         if url.scheme == "http",
            let httpsURL = URL(
@@ -45,7 +45,7 @@ struct ImageView: View {
             self.url = url
         }
     }
-    
+
 #if canImport(UIKit)
     func saveImage() {
         Task {
@@ -54,7 +54,7 @@ struct ImageView: View {
             UIImageWriteToSavedPhotosAlbum(img, nil, nil, nil)
         }
     }
-    
+
 #elseif canImport(AppKit)
     func showSavePanel() -> URL? {
         let savePanel = NSSavePanel()
@@ -64,11 +64,11 @@ struct ImageView: View {
         savePanel.title = "保存图片"
         savePanel.message = "请选择一个文件夹来保存图片"
         savePanel.nameFieldLabel = "图片名称:"
-        
+
         let response = savePanel.runModal()
         return response == .OK ? savePanel.url : nil
     }
-    
+
     func savePNG(imageName: String, path: URL) {
         guard let image = NSImage(named: imageName) else { return }
         guard let tiffData = image.tiffRepresentation else { return }
@@ -81,7 +81,7 @@ struct ImageView: View {
         try? pngData.write(to: path)
     }
 #endif
-    
+
     var body: some View {
         WebImage(url: url) { image in
             image.resizable()
@@ -98,7 +98,9 @@ struct ImageView: View {
             failed = true
         }
         .onSuccess { image, _, _ in
+          DispatchQueue.main.async {
             self.width = image.size.width
+          }
         }
         .indicator(.activity)
         .transition(.fade(duration: 0.25))
@@ -147,7 +149,7 @@ struct ImageView: View {
         }
 #endif
     }
-    
+
     private func openImagePreviewer() {
         if BBCodeContext.shared.image.delegateImagePreviwer {
             BBCodeContext.shared.image.imagePreviewerDelegate(url)
@@ -159,26 +161,26 @@ struct ImageView: View {
 public struct ImagePreviewer: View {
     let url: URL
     let contentMode: ContentMode
-    
+
     public var onImageLoaded: ((CGSize) -> Void) = { _ in }
-    
+
     @State private var scale: CGFloat = 1
     @State private var lastScale: CGFloat = 1
-    
+
     @State private var offset: CGPoint = .zero
     @State private var lastTranslation: CGSize = .zero
-    
+
     @State private var failed = false
-    
+
     @Environment(\.dismiss) private var dismiss
-    
+
     @State private var imageSize: CGSize? = nil
-    
+
     public init(url: URL, contentMode: ContentMode = .fit) {
         self.url = url
         self.contentMode = contentMode
     }
-    
+
     public var body: some View {
         GeometryReader { proxy in
             WebImage(url: url) { image in
@@ -213,13 +215,13 @@ public struct ImagePreviewer: View {
             .edgesIgnoringSafeArea(.all)
         }
     }
-    
+
     private func makeMagnificationGesture(size: CGSize) -> some Gesture {
         MagnificationGesture()
             .onChanged { value in
                 let delta = lastScale == 0 ? 0 : value / lastScale
                 lastScale = value
-                
+
                 // To minimize jittering
                 if abs(1 - delta) > 0.01 {
                     scale = max(scale * delta, 0.05)
@@ -235,7 +237,7 @@ public struct ImagePreviewer: View {
                 adjustMaxOffset(size: size)
             }
     }
-    
+
     private func makeDragGesture(size: CGSize) -> some Gesture {
         DragGesture()
             .onChanged { value in
@@ -250,21 +252,21 @@ public struct ImagePreviewer: View {
                 adjustMaxOffset(size: size)
             }
     }
-    
+
     private func adjustMaxOffset(size: CGSize) {
         let maxOffsetX = (size.width * (scale - 1)) / 2
         let maxOffsetY = (size.height * (scale - 1)) / 2
-        
+
         var newOffsetX = offset.x
         var newOffsetY = offset.y
-        
+
         if abs(newOffsetX) > maxOffsetX {
             newOffsetX = maxOffsetX * (abs(newOffsetX) / newOffsetX)
         }
         if abs(newOffsetY) > maxOffsetY {
             newOffsetY = maxOffsetY * (abs(newOffsetY) / newOffsetY)
         }
-        
+
         let newOffset = CGPoint(x: newOffsetX, y: newOffsetY)
         if newOffset != offset {
             withAnimation {
@@ -278,16 +280,16 @@ public struct ImagePreviewer: View {
 #Preview {
 
     struct Image_Preview: View {
-        
+
         init() {
             BBCodeContext.shared.image.enableContextMenu = false
             BBCodeContext.shared.image.enableImagePreviewer = false
         }
-        
+
         var body: some View {
             VStack {
                 ImageView(url: URL(string: "https://images.cnblogs.com/cnblogs_com/blogs/770567/galleries/2319749/o_250711175155_111.gif")!)
-                
+
                 VStack {
                     ImagePreviewer(url: URL(string: "https://images.cnblogs.com/cnblogs_com/blogs/770567/galleries/2319749/o_250711175155_111.gif")!)
                 }
@@ -296,6 +298,6 @@ public struct ImagePreviewer: View {
             .frame(width: 600, height: 900)
         }
     }
-    
+
     return Image_Preview()
 }

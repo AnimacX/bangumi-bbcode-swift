@@ -81,7 +81,7 @@ extension Node {
 @MainActor
 var textRenders: [BBType: TextRender] {
     let inQuoteKey = "inQuote";
-    
+
     return [
         .plain: { (n: Node, _: [String: Any]?) in
                 .string(AttributedString(n.value))
@@ -289,7 +289,7 @@ var textRenders: [BBType: TextRender] {
                 )
             case let .text(content):
                 let inner = content.foregroundColor(.secondary)
-                
+
                 return .view(
                     AnyView(
                         VStack(alignment: .leading, spacing: 0) {
@@ -641,12 +641,58 @@ var textRenders: [BBType: TextRender] {
                 ), .mask
             )
         },
-        .smilies: { (n: Node, args: [String: Any]?) in
-            if let inQuote = args?[inQuoteKey] as? Bool, inQuote {
-                return .text(Text(""))
-            }
-            let img = Image(packageResource: "bgm\(n.attr)", ofType: "gif")
-            return .text(Text(img))
+        .bgm: { (n: Node, args: [String: Any]?) in
+              let bgmId = Int(n.attr) ?? 24
+              let textSize = args?["textSize"] as? Int ?? 16
+
+              // Try to load image with fallback for different formats
+              let img: Image
+              if bgmId > 0 && bgmId < 24 {
+                // old range - try gif first, then png
+                let iconId = String(format: "%02d", bgmId)
+                if Bundle.module.path(forResource: "bgm\(iconId)", ofType: "gif") != nil {
+                  img = Image(packageResource: "bgm\(iconId)", ofType: "gif")
+                } else {
+                  img = Image(packageResource: "bgm\(iconId)", ofType: "png")
+                }
+              } else if bgmId >= 24 && bgmId <= 125 {
+                // Original range - try gif first
+                img = Image(packageResource: "bgm\(bgmId)", ofType: "gif")
+              } else if bgmId >= 200 && bgmId <= 238 {
+                // tv_vs range - use png format
+                img = Image(packageResource: "bgm\(bgmId)", ofType: "png")
+              } else if bgmId >= 500 && bgmId <= 529 {
+                // tv_500 range - try gif first, then png
+                if Bundle.module.path(forResource: "bgm\(bgmId)", ofType: "gif") != nil {
+                  img = Image(packageResource: "bgm\(bgmId)", ofType: "gif")
+                } else {
+                  img = Image(packageResource: "bgm\(bgmId)", ofType: "png")
+                }
+              } else {
+                // Fallback - try gif
+                img = Image(packageResource: "bgm\(bgmId)", ofType: "gif")
+              }
+
+              return .text(Text(img).font(.system(size: CGFloat(textSize))))
+        },
+        .bmo: { (n: Node, args: [String: Any]?) in
+          let bmoCode = n.attr
+          let textSize = args?["textSize"] as? Int ?? 16
+          // Decode the BMO code to get emoji information
+          let bmoResult = BmoDecoder.decode(bmoCode)
+
+          if bmoResult.items.isEmpty {
+            // If no items found, return the original code as text
+            return .string(AttributedString("(\(bmoCode))"))
+          }
+
+          // Render the BMO emoji as SwiftUI Image
+          if let image = BmoRenderer.renderImage(from: bmoResult, textSize: textSize + 4) {
+            return .text(Text(image).font(.system(size: CGFloat(textSize))))
+          }
+
+          // Fallback to placeholder text
+          return .string(AttributedString("(\(bmoCode))"))
         },
     ]
 }
@@ -660,7 +706,7 @@ func handleTextNewlines(node: Node, tagManager: TagManager) {
     while node.children.last?.type == .br {
         node.children.removeLast()
     }
-    
+
     var previous: Node?
     for n in node.children {
         if n.type == .br {

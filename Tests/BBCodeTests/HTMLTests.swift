@@ -128,8 +128,89 @@ class HTMLTests: XCTestCase {
   func testSmilies() {
     XCTAssertEqual(
       try BBCode().html("表情符号：(bgm38)"),
-      "表情符号：<img src=\"https://lain.bgm.tv/img/smiles/tv/15.gif\" alt=\"(bgm38)\" />"
+      "表情符号：<img src=\"https://lain.bgm.tv/img/smiles/tv/15.gif\" alt=\"(bgm38)\" style=\"width: 16px; height: 16px;\" />"
     )
+  }
+
+  func testBmo() {
+    let result = try! BBCode().html("BMO表情：(bmoCAkiCE0CATYIiNA)")
+    // BMO should now render as an actual image with base64 data URL
+    XCTAssertTrue(result.contains("BMO表情：<img src=\"data:image/png;base64,"))
+    XCTAssertTrue(result.contains("alt=\"(bmoCAkiCE0CATYIiNA)\""))
+    XCTAssertTrue(result.contains("style=\"width: 16px; height: 16px;\""))
+  }
+
+  func testBmoEmpty() {
+    XCTAssertEqual(
+      try BBCode().html("空BMO：(bmoC)"),
+      "空BMO：<span class=\"bmo-placeholder\">(bmoC)</span>"
+    )
+  }
+
+  func testParenthesesAtEnd() {
+    // Test case for text ending with '(' that should be treated as plain text
+    XCTAssertEqual(
+      try BBCode().html("这是一些文字("),
+      "这是一些文字("
+    )
+  }
+
+  func testParenthesesAtEndWithNewline() {
+    // Test case for text ending with '(' followed by newline
+    XCTAssertEqual(
+      try BBCode().html("这是一些文字(\n"),
+      "这是一些文字(\n"
+    )
+  }
+
+  func testParenthesesAtEndWithCarriageReturn() {
+    // Test case for text ending with '(' followed by carriage return
+    XCTAssertEqual(
+      try BBCode().html("这是一些文字(\r"),
+      "这是一些文字(\r"
+    )
+  }
+
+  func testParenthesesAtEndWithCarriageReturnNewline() {
+    // Test case for text ending with '(' followed by CRLF
+    XCTAssertEqual(
+      try BBCode().html("这是一些文字(\r\n"),
+      "这是一些文字(\r<br>"
+    )
+  }
+
+  func testParenthesesAtEndWithContent() {
+    // Test case for text ending with '(' that has some content but no closing ')'
+    XCTAssertEqual(
+      try BBCode().html("这是一些文字(bgm"),
+      "这是一些文字(bgm"
+    )
+  }
+
+  func testParenthesesAtEndWithInvalidBgm() {
+    // Test case for text ending with '(' that has invalid bgm code
+    XCTAssertEqual(
+      try BBCode().html("这是一些文字(bgm999"),
+      "这是一些文字(bgm999"
+    )
+  }
+
+  func testNewEmojiRanges() {
+    // Test tv_vs range (200-238) - should use png format
+    let tvVsResult = try! BBCode().html("tv_vs表情：(bgm200)")
+    XCTAssertTrue(tvVsResult.contains("bgm200.png"))
+    XCTAssertTrue(tvVsResult.contains("alt=\"(bgm200)\""))
+
+    // Test tv_500 range (500-529) - should try gif first, then png
+    let tv500Result = try! BBCode().html("tv_500表情：(bgm500)")
+    XCTAssertTrue(tv500Result.contains("bgm500"))
+    XCTAssertTrue(tv500Result.contains("alt=\"(bgm500)\""))
+
+    // Test mixed ranges
+    let mixedResult = try! BBCode().html("混合表情：(bgm38)(bgm200)(bgm500)")
+    XCTAssertTrue(mixedResult.contains("bgm38"))
+    XCTAssertTrue(mixedResult.contains("bgm200.png"))
+    XCTAssertTrue(mixedResult.contains("bgm500"))
   }
 
 }

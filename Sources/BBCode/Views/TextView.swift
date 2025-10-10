@@ -10,7 +10,7 @@ public struct BBCodeView: View {
   }
 
   public var body: some View {
-    switch BBCode().text(code) {
+    switch BBCode().text(code, args: ["textSize": textSize]) {
     case .string(let content):
       Text(content)
         .font(.system(size: CGFloat(textSize)))
@@ -42,19 +42,22 @@ public struct BBCodeView: View {
     存放于其他网络服务器的图片：[img]https://chii.in/img/ico/bgm88-31.gif[/img]
     调整图片大小[img=60,40]https://chii.in/img/ico/bgm88-31.gif[/img]
     [img=600,400]https://chii.in/img/ico/bgm88-31.gif[/img]
-    
+
     [img]https://raw.githubusercontent.com/onevcat/Kingfisher-TestImages/master/DemoAppImage/GIF/2.gif[/img]
     [img]https://static.hya.moe/execwb-publish/bgm-publish-heading.webp[/img]
     [img]https://static.hya.moe/execwb-demo.avif[/img]
     [img]https://static.hya.moe/execwb-demo.mp4[/img]
     [img]https://dev.w3.org/SVG/tools/svgweb/samples/svg-files/svg2009.svg[/img]
-    
+
     代码片段：
     [code]
     print("Hello, World!")
     exit(0)
     [/code]
     (bgm38) (bgm24)
+    (bmoCAoAEghP8A4BNgiKWBA) 紫色的
+    绿色的 (bmoCArACghOkAoBNgiKGAg)
+    [quote]引用的片段[/quote]
     [quote][b]AnimacX 说[/b]引用的片段\r\n再说了[img]https://static.hya.moe/execwb-demo.avif[/img][/quote]
     ABCDEFGIGABCDEFGIGABCDEFGIGABCDEFGIGABCDEFGIGABCDEFGIGABCDEFGIG
     [quote][b]不吃洋葱zzz[/b] 说: 还好我是声优厨[/quote]

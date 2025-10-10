@@ -337,17 +337,63 @@ var htmlRenders: [BBType: HTMLRender] {
       html.append("</span>")
       return html
     },
-    .smilies: { (n: Node, args: [String: Any]?) in
+    .bgm: { (n: Node, args: [String: Any]?) in
       let bgmId = Int(n.attr) ?? 24
-      let iconId = String(format: "%02d", bgmId - 23)
+      let textSize = args?["textSize"] as? Int ?? 16
+
+      // Determine the image source based on bgmId range
+      let imageSrc: String
+      if bgmId > 0 && bgmId < 24 {
+        // old range - use the old URL format
+        let iconId = String(format: "%02d", bgmId)
+        imageSrc = "bgm/\(iconId).gif"
+      } else if bgmId >= 24 && bgmId <= 125 {
+        // Original range - use the old URL format
+        let iconId = String(format: "%02d", bgmId - 23)
+        imageSrc = "tv/\(iconId).gif"
+      } else if bgmId >= 200 && bgmId <= 238 {
+        // tv_vs range - use local resources with png format
+        imageSrc = "tv_vs/bgm_\(bgmId).png"
+      } else if bgmId >= 500 && bgmId <= 529 {
+        // tv_500 range - use local resources, try both gif and png
+        // For now, we'll use a data URL approach since we need to check both formats
+        imageSrc = "tv_500/bgm_\(bgmId)"  // Will be handled by the image loading logic
+      } else {
+        // Fallback
+        imageSrc = "bgm\(bgmId).gif"
+      }
+
       return
-        "<img src=\"https://lain.bgm.tv/img/smiles/tv/\(iconId).gif\" alt=\"(bgm\(bgmId))\" />"
+        "<img src=\"https://lain.bgm.tv/img/smiles/\(imageSrc)\" alt=\"(bgm\(bgmId))\" style=\"width: \(textSize)px; height: \(textSize)px;\" />"
+    },
+    .bmo: { (n: Node, args: [String: Any]?) in
+      let bmoCode = n.attr
+      let textSize = args?["textSize"] as? Int ?? 16
+      // Decode the BMO code to get emoji information
+      let bmoResult = BmoDecoder.decode(bmoCode)
+
+      if bmoResult.items.isEmpty {
+        // If no items found, return the original code as text
+        return "<span class=\"bmo-placeholder\">(\(bmoCode))</span>"
+      }
+
+      // Render the BMO emoji as a data URL
+      if let cgImage = BmoRenderer.renderCGImage(from: bmoResult, textSize: textSize),
+        let data = cgImage.dataProvider?.data
+      {
+        let base64String = Data(referencing: data).base64EncodedString()
+        return
+          "<img src=\"data:image/png;base64,\(base64String)\" alt=\"(\(bmoCode))\" style=\"width: \(textSize)px; height: \(textSize)px;\" />"
+      }
+
+      // Fallback to placeholder
+      return "<span class=\"bmo-emoji\" data-code=\"\(bmoCode)\">(\(bmoCode))</span>"
     },
   ]
 }
 
 func BBCodeToHTML(code: String, textSize: Int) -> String {
-  guard let body = try? BBCode().html(code) else {
+  guard let body = try? BBCode().html(code, args: ["textSize": textSize]) else {
     return code
   }
   let html = """

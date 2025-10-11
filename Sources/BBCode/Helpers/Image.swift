@@ -141,7 +141,10 @@ struct ImageView: View {
         }
 #if os(iOS)
         .fullScreenCover(isPresented: $showPreview) {
-            ImagePreviewer(url: url)
+            ZStack(alignment: .center) {
+                ImagePreviewer(url: url)
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
 #else
         .sheet(isPresented: $showPreview) {

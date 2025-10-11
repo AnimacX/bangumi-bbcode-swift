@@ -141,7 +141,10 @@ struct ImageView: View {
         }
 #if os(iOS)
         .fullScreenCover(isPresented: $showPreview) {
-            ImagePreviewer(url: url)
+            ZStack(alignment: .center) {
+                ImagePreviewer(url: url)
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
 #else
         .sheet(isPresented: $showPreview) {
@@ -183,35 +186,35 @@ public struct ImagePreviewer: View {
     
     public var body: some View {
         GeometryReader { proxy in
-            ZStack {
-                WebImage(url: url) { image in
-                    image
-                        .resizable()
-                        .aspectRatio(contentMode: .fit)
-                } placeholder: {
-                    if failed {
-                        Image(systemName: "exclamationmark.triangle")
-                            .font(.system(size: 40))
-                            .foregroundColor(.red)
-                    } else {
-                        ProgressView()
-                    }
-                }
-                .onFailure { error in
-                    failed = true
-                }
-                .indicator(.activity)
-                .padding(0)
-                .transition(.fade(duration: 0.25))
-                .scaleEffect(scale)
-                .offset(x: offset.x, y: offset.y)
-                .gesture(makeDragGesture(size: proxy.size))
-                .gesture(makeMagnificationGesture(size: proxy.size))
-                .onTapGesture {
-                    dismiss()
+            WebImage(url: url) { image in
+                image
+                    .resizable()
+                    .aspectRatio(contentMode: contentMode)
+            } placeholder: {
+                if failed {
+                    Image(systemName: "exclamationmark.triangle")
+                        .font(.system(size: 40))
+                        .foregroundColor(.red)
+                } else {
+                    ProgressView()
                 }
             }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .onSuccess { image, _, _ in
+                onImageLoaded(image.size)
+            }
+            .onFailure { _ in
+                failed = true
+            }
+            .indicator(.activity)
+            .padding(0)
+            .transition(.fade(duration: 0.25))
+            .scaleEffect(scale)
+            .offset(x: offset.x, y: offset.y)
+            .gesture(makeDragGesture(size: proxy.size))
+            .gesture(makeMagnificationGesture(size: proxy.size))
+            .onTapGesture {
+                dismiss()
+            }
             .edgesIgnoringSafeArea(.all)
         }
     }
@@ -283,7 +286,7 @@ public struct ImagePreviewer: View {
         
         init() {
             BBCodeContext.shared.image.enableContextMenu = false
-            BBCodeContext.shared.image.enableImagePreviewer = true
+            BBCodeContext.shared.image.enableImagePreviewer = false
         }
         
         var body: some View {

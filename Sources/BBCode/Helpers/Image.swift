@@ -141,10 +141,7 @@ struct ImageView: View {
         }
 #if os(iOS)
         .fullScreenCover(isPresented: $showPreview) {
-            ZStack(alignment: .center) {
-                ImagePreviewer(url: url)
-            }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            ImagePreviewer(url: url)
         }
 #else
         .sheet(isPresented: $showPreview) {
@@ -186,37 +183,49 @@ public struct ImagePreviewer: View {
     
     public var body: some View {
         GeometryReader { proxy in
-            WebImage(url: url) { image in
-                image
-                    .resizable()
-                    .aspectRatio(contentMode: contentMode)
-            } placeholder: {
-                if failed {
-                    Image(systemName: "exclamationmark.triangle")
-                        .font(.system(size: 40))
-                        .foregroundColor(.red)
-                } else {
-                    ProgressView()
-                }
+            #if os(macOS)
+            webImage(proxy: proxy)
+            #else
+            ZStack {
+                webImage(proxy: proxy)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
-            .onSuccess { image, _, _ in
-                onImageLoaded(image.size)
-            }
-            .onFailure { _ in
-                failed = true
-            }
-            .indicator(.activity)
-            .padding(0)
-            .transition(.fade(duration: 0.25))
-            .scaleEffect(scale)
-            .offset(x: offset.x, y: offset.y)
-            .gesture(makeDragGesture(size: proxy.size))
-            .gesture(makeMagnificationGesture(size: proxy.size))
-            .onTapGesture {
-                dismiss()
-            }
-            .edgesIgnoringSafeArea(.all)
+            #endif
         }
+    }
+    
+    @ViewBuilder
+    private func webImage(proxy: GeometryProxy) -> some View {
+        WebImage(url: url) { image in
+            image
+                .resizable()
+                .aspectRatio(contentMode: contentMode)
+        } placeholder: {
+            if failed {
+                Image(systemName: "exclamationmark.triangle")
+                    .font(.system(size: 40))
+                    .foregroundColor(.red)
+            } else {
+                ProgressView()
+            }
+        }
+        .onSuccess { image, _, _ in
+            onImageLoaded(image.size)
+        }
+        .onFailure { _ in
+            failed = true
+        }
+        .indicator(.activity)
+        .padding(0)
+        .transition(.fade(duration: 0.25))
+        .scaleEffect(scale)
+        .offset(x: offset.x, y: offset.y)
+        .gesture(makeDragGesture(size: proxy.size))
+        .gesture(makeMagnificationGesture(size: proxy.size))
+        .onTapGesture {
+            dismiss()
+        }
+        .edgesIgnoringSafeArea(.all)
     }
     
     private func makeMagnificationGesture(size: CGSize) -> some Gesture {
@@ -286,7 +295,7 @@ public struct ImagePreviewer: View {
         
         init() {
             BBCodeContext.shared.image.enableContextMenu = false
-            BBCodeContext.shared.image.enableImagePreviewer = false
+            BBCodeContext.shared.image.enableImagePreviewer = true
         }
         
         var body: some View {

@@ -1,6 +1,7 @@
 import Foundation
 import SDWebImageSwiftUI
 import SwiftUI
+import UniformTypeIdentifiers
 
 private struct IsInLinkKey: EnvironmentKey {
   static let defaultValue: Bool = false
@@ -69,47 +70,30 @@ struct ImageView: View {
     }
 
   #elseif canImport(AppKit)
-    func showSavePanel() -> URL? {
+    func showSavePanel(fileName: String) -> URL? {
       let savePanel = NSSavePanel()
-      savePanel.allowedContentTypes = [.png]
+      let ext = (fileName as NSString).pathExtension.lowercased()
+      if !ext.isEmpty, let utType = UTType(filenameExtension: ext) {
+        savePanel.allowedContentTypes = [utType]
+      } else {
+        savePanel.allowedContentTypes = [.png, .jpeg, .gif, .bmp, .tiff, .webP, .heic, .heif]
+      }
       savePanel.canCreateDirectories = true
       savePanel.isExtensionHidden = false
       savePanel.title = "保存图片"
       savePanel.message = "请选择一个文件夹来保存图片"
       savePanel.nameFieldLabel = "图片名称:"
+      savePanel.nameFieldStringValue = fileName
 
       let response = savePanel.runModal()
       return response == .OK ? savePanel.url : nil
     }
 
-    func parseFileType(_ name: String) -> NSBitmapImageRep.FileType {
-      let ext = (name as NSString).pathExtension.lowercased()
-      switch ext {
-      case "png":
-        return .png
-      case "jpg", "jpeg":
-        return .jpeg
-      case "bmp":
-        return .bmp
-      case "gif":
-        return .gif
-      case "tiff":
-        return .tiff
-      default:
-        return .jpeg2000
+    func saveToFile(from url: URL, to path: URL) {
+      Task {
+        guard let data = try? await URLSession.shared.data(from: url).0 else { return }
+        try? data.write(to: path)
       }
-    }
-
-    func savePNG(imageName: String, path: URL) {
-      guard let image = NSImage(named: imageName) else { return }
-      guard let tiffData = image.tiffRepresentation else { return }
-      guard let imageRepresentation = NSBitmapImageRep(data: tiffData) else {
-        return
-      }
-      guard let imgdata = imageRepresentation.representation(using: parseFileType(imageName), properties: [:]) else {
-        return
-      }
-      try? imgdata.write(to: path)
     }
   #endif
 
@@ -177,8 +161,8 @@ struct ImageView: View {
           #if canImport(UIKit)
             saveImage()
           #elseif canImport(AppKit)
-            if let path = showSavePanel() {
-              savePNG(imageName: url.lastPathComponent, path: path)
+            if let path = showSavePanel(fileName: url.lastPathComponent) {
+              saveToFile(from: url, to: path)
             }
           #endif
         } label: {

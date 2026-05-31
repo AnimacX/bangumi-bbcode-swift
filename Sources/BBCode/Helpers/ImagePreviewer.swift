@@ -10,7 +10,9 @@ import SDWebImageSwiftUI
 import SwiftUI
 
 public struct ImagePreviewer: View {
-  let url: URL
+  public let url: URL
+  public let contentMode: ContentMode
+  public var onImageLoaded: ((CGSize) -> Void) = { _ in }
 
   @State private var scale: CGFloat = 1
   @State private var lastScale: CGFloat = 1
@@ -24,8 +26,9 @@ public struct ImagePreviewer: View {
 
   @Environment(\.dismiss) private var dismiss
 
-  public init(url: URL) {
+  public init(url: URL, contentMode: ContentMode = .fit) {
     self.url = url
+    self.contentMode = contentMode
   }
 
   public var body: some View {
@@ -39,7 +42,7 @@ public struct ImagePreviewer: View {
         WebImage(url: url) { image in
           image
             .resizable()
-            .aspectRatio(contentMode: .fit)
+            .aspectRatio(contentMode: contentMode)
         } placeholder: {
           if failed {
             Image(systemName: "exclamationmark.triangle")
@@ -49,6 +52,9 @@ public struct ImagePreviewer: View {
             ProgressView()
               .tint(.white)
           }
+        }
+        .onSuccess { image, _, _ in
+          onImageLoaded(image.size)
         }
         .onFailure { _ in
           failed = true
@@ -231,7 +237,7 @@ public struct ImagePreviewer: View {
         ImageView(url: URL(string: "https://images.cnblogs.com/cnblogs_com/blogs/770567/galleries/2319749/o_250711175155_111.gif")!)
 
         VStack {
-          ImagePreviewer(url: URL(string: "https://images.cnblogs.com/cnblogs_com/blogs/770567/galleries/2319749/o_250711175155_111.gif")!)
+            ImagePreviewer(url: URL(string: "https://images.cnblogs.com/cnblogs_com/blogs/770567/galleries/2319749/o_250711175155_111.gif")!, contentMode: .fit)
         }
         .background(.blue)
       }

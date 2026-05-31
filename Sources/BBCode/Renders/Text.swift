@@ -448,7 +448,7 @@ var textRenders: [BBType: TextRender] {
     },
     .image: { (n: Node, args: [String: Any]?) in
       if let inQuote = args?[inQuoteKey] as? Bool, inQuote {
-        return .text(Text(""))
+        return .string(AttributedString("[图片]"))
       }
       switch n.renderInnerText(args) {
       case let .string(content):
@@ -487,6 +487,9 @@ var textRenders: [BBType: TextRender] {
       }
     },
     .photo: { (n: Node, args: [String: Any]?) in
+      if let inQuote = args?[inQuoteKey] as? Bool, inQuote {
+        return .string(AttributedString("[图片]"))
+      }
       var url = "https://lain.bgm.tv/pic/photo/l/"
       switch n.renderInnerText(args) {
       case let .string(content):
@@ -622,7 +625,7 @@ var textRenders: [BBType: TextRender] {
     },
     .mask: { (n: Node, args: [String: Any]?) in
       if let inQuote = args?[inQuoteKey] as? Bool, inQuote {
-        return .text(Text(""))
+        return .string(AttributedString("[隐藏]"))
       }
       var inner: Text = Text("")
       switch n.renderInnerText(args) {
@@ -666,7 +669,7 @@ var textRenders: [BBType: TextRender] {
           let ruby = Text("(\(n.attr))").font(.system(size: rubySize)).baselineOffset(offset)
           return .text(content + ruby)
         }
-      case .view(_):
+      case .view(_, _):
         return .string(AttributedString())
       }
     },

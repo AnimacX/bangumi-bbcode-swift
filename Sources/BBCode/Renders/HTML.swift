@@ -337,6 +337,16 @@ var htmlRenders: [BBType: HTMLRender] {
       html.append("</span>")
       return html
     },
+    .ruby: { (n: Node, args: [String: Any]?) in
+      var html: String
+      if n.attr.isEmpty {
+        html = n.renderInnerHTML(args)
+      } else {
+        html =
+          "<ruby>\(n.renderInnerHTML(args))<rp>(</rp><rt>\(n.escapedAttr)</rt><rp>)</rp></ruby>"
+      }
+      return html
+    },
     .bgm: { (n: Node, args: [String: Any]?) in
       let bgmId = Int(n.attr) ?? 24
       let textSize = args?["textSize"] as? Int ?? 16

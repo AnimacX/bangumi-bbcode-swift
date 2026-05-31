@@ -95,7 +95,7 @@ enum BBType: Int {
   case paragraphStart, paragraphEnd
   case center, left, right, align
   case quote, code, url, image, photo
-  case bold, italic, underline, delete, color, size, mask
+  case bold, italic, underline, delete, color, size, mask, ruby
   case list, listitem
   case bgm, bmo
   case subject, user
@@ -103,7 +103,7 @@ enum BBType: Int {
 
   static let unsupported: [BBType] = [.background, .avatar, .float]
   static let layout: [BBType] = [.center, .left, .right, .align]
-  static let textStyle: [BBType] = [.bold, .italic, .underline, .delete, .color, .size]
+  static let textStyle: [BBType] = [.bold, .italic, .underline, .delete, .color, .size, .ruby]
 
   var description: String {
     switch self {
@@ -129,6 +129,7 @@ enum BBType: Int {
     case .color: return "color"
     case .size: return "size"
     case .mask: return "mask"
+    case .ruby: return "ruby"
     case .list: return "list"
     case .listitem: return "listitem"
     case .bgm: return "bgm"
@@ -424,6 +425,17 @@ let tags: [TagInfo] = [
       ] + BBType.unsupported + BBType.textStyle,
       allowAttr: false,
       isBlock: true
+    )
+  ),
+  TagInfo(
+    "ruby", .ruby,
+    TagDescription(
+      tagNeeded: true, isSelfClosing: false,
+      allowedChildren: [
+        .br, .subject, .user,
+      ] + BBType.unsupported + BBType.textStyle,
+      allowAttr: true,
+      isBlock: false
     )
   ),
   TagInfo(

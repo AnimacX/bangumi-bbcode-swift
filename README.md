@@ -91,3 +91,4 @@ struct ContentView: View {
 - [x] user
 - [x] smilies
 - [ ] email
+- [x] ruby

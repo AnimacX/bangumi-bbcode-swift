@@ -110,6 +110,14 @@ var plainRenders: [BBType: PlainRender] {
       let plain = n.renderInnerPlain(args)
       return Array(repeating: "■", count: plain.count).joined()
     },
+    .ruby: { (n: Node, args: [String: Any]?) in
+      let base = n.renderInnerPlain(args)
+      if n.attr.isEmpty {
+        return base
+      } else {
+        return "\(base)(\(n.attr))"
+      }
+    },
     .bgm: { (n: Node, args: [String: Any]?) in
       return ""
     },

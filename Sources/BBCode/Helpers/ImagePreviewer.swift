@@ -64,19 +64,28 @@ public struct ImagePreviewer: View {
         .scaleEffect(scale)
         .offset(x: offset.x + dragOffset.width, y: offset.y + dragOffset.height)
         .opacity(dragOffset.height > 0 ? max(0.3, 1 - abs(dragOffset.height) / 300.0) : 1)
+#if canImport(UIKit)
         .gesture(
-          SimultaneousGesture(
             SimultaneousGesture(
-              makeMagnificationGesture(size: proxy.size),
-              makeDragGesture(size: proxy.size)
-            ),
-            makeSwipeDownGesture()
-          )
+                SimultaneousGesture(
+                    makeMagnificationGesture(size: proxy.size),
+                    makeDragGesture(size: proxy.size)
+                ),
+                makeSwipeDownGesture()
+            )
         )
+#else
+        .gesture(
+            SimultaneousGesture(
+                makeMagnificationGesture(size: proxy.size),
+                makeDragGesture(size: proxy.size)
+            )
+        )
+#endif
         .onTapGesture {
-          withAnimation {
-            showControls.toggle()
-          }
+            withAnimation {
+                showControls.toggle()
+            }
         }
 
         // Top Control Bar
@@ -237,7 +246,7 @@ public struct ImagePreviewer: View {
         ImageView(url: URL(string: "https://images.cnblogs.com/cnblogs_com/blogs/770567/galleries/2319749/o_250711175155_111.gif")!)
 
         VStack {
-            ImagePreviewer(url: URL(string: "https://images.cnblogs.com/cnblogs_com/blogs/770567/galleries/2319749/o_250711175155_111.gif")!, contentMode: .fit)
+          ImagePreviewer(url: URL(string: "https://images.cnblogs.com/cnblogs_com/blogs/770567/galleries/2319749/o_250711175155_111.gif")!, contentMode: .fit)
         }
         .background(.blue)
       }

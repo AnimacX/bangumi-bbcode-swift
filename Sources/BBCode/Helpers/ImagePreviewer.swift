@@ -224,6 +224,10 @@ public struct ImagePreviewer: View {
 
     var body: some View {
       VStack {
+        Text(("img.png" as NSString).pathExtension.lowercased())
+        Text(("img.jpg" as NSString).pathExtension.lowercased())
+        Text(("img.gif" as NSString).pathExtension.lowercased())
+
         ImageView(url: URL(string: "https://images.cnblogs.com/cnblogs_com/blogs/770567/galleries/2319749/o_250711175155_111.gif")!)
 
         VStack {

@@ -73,6 +73,24 @@ struct ImageView: View {
       let response = savePanel.runModal()
       return response == .OK ? savePanel.url : nil
     }
+    
+    func parseFileType(_ name: String) -> NSBitmapImageRep.FileType {
+        let ext = (name as NSString).pathExtension.lowercased()
+        switch ext {
+        case "png":
+            return .png
+        case "jpg", "jpeg":
+            return .jpeg
+        case "bmp":
+            return .bmp
+        case "gif":
+            return .gif
+        case "tiff":
+            return .tiff
+        default:
+            return .jpeg2000
+        }
+    }
 
     func savePNG(imageName: String, path: URL) {
       guard let image = NSImage(named: imageName) else { return }
@@ -80,10 +98,10 @@ struct ImageView: View {
       guard let imageRepresentation = NSBitmapImageRep(data: tiffData) else {
         return
       }
-      guard let pngData = imageRepresentation.representation(using: .png, properties: [:]) else {
+      guard let imgdata = imageRepresentation.representation(using: parseFileType(imageName), properties: [:]) else {
         return
       }
-      try? pngData.write(to: path)
+      try? imgdata.write(to: path)
     }
   #endif
 

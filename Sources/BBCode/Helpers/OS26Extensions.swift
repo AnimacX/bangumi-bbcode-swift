@@ -64,7 +64,7 @@ extension View {
   /// https://developer.apple.com/documentation/swiftui/view/tabbarminimizebehavior(_:)
   /// 注意: onScrollDown 仅在 iOS 26.0+ 上可用
   /// https://developer.apple.com/documentation/swiftui/tabbarminimizebehavior/onscrolldown
-  #if os(iOS)
+#if os(iOS) && swift(>=7.0)
     @ViewBuilder
     func tabBarMinimizeBehaviorIfAvailable() -> some View {
       if #available(iOS 26.0, *) {

@@ -320,7 +320,7 @@ let tags: [TagInfo] = [
     TagDescription(
       tagNeeded: true, isSelfClosing: false,
       allowedChildren: [
-        .br, .mask, .quote, .code, .url, .image, .subject, .user,
+        .br, .mask, .quote, .code, .url, .image, .subject, .user, .photo
       ] + BBType.unsupported + BBType.layout + BBType.textStyle,
       allowAttr: false,
       isBlock: true

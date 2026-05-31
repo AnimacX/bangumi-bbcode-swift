@@ -58,6 +58,7 @@ public struct BBCodeView: View {
     (bmoCAoAEghP8A4BNgiKWBA) 紫色的
     绿色的 (bmoCArACghOkAoBNgiKGAg)
     [quote]引用的片段[/quote]
+    [quote]引用的片段:[photo=104569]4b/d1/873244_3p4I7.jpg[/photo][/quote]
     [quote][b]AnimacX 说[/b]引用的片段\r\n再说了[img]https://static.hya.moe/execwb-demo.avif[/img][/quote]
     ABCDEFGIGABCDEFGIGABCDEFGIGABCDEFGIGABCDEFGIGABCDEFGIGABCDEFGIG
     [quote][b]不吃洋葱zzz[/b] 说: 还好我是声优厨[/quote]

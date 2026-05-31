@@ -17,7 +17,7 @@ extension Image {
   init(packageResource name: String, ofType type: String) {
     #if canImport(UIKit)
       guard let path = Bundle.module.path(forResource: name, ofType: type),
-        let image = UIImage(contentsOfFile: path)
+            let image = UIImage(contentsOfFile: path)
       else {
         self.init(name)
         return
@@ -59,35 +59,70 @@ struct ImageView: View {
         UIImageWriteToSavedPhotosAlbum(img, nil, nil, nil)
       }
     }
+
   #elseif canImport(AppKit)
-  func showSavePanel() -> URL? {
-    let savePanel = NSSavePanel()
-    savePanel.allowedContentTypes = [.png]
-    savePanel.canCreateDirectories = true
-    savePanel.isExtensionHidden = false
-    savePanel.title = "保存图片"
-    savePanel.message = "请选择一个文件夹来保存图片"
-    savePanel.nameFieldLabel = "图片名称:"
+    func showSavePanel() -> URL? {
+      let savePanel = NSSavePanel()
+      savePanel.allowedContentTypes = [.png]
+      savePanel.canCreateDirectories = true
+      savePanel.isExtensionHidden = false
+      savePanel.title = "保存图片"
+      savePanel.message = "请选择一个文件夹来保存图片"
+      savePanel.nameFieldLabel = "图片名称:"
 
-    let response = savePanel.runModal()
-    return response == .OK ? savePanel.url : nil
-  }
+      let response = savePanel.runModal()
+      return response == .OK ? savePanel.url : nil
+    }
 
-  func savePNG(imageName: String, path: URL) {
-    guard let image = NSImage(named: imageName) else { return }
-    guard let tiffData = image.tiffRepresentation else { return }
-    guard let imageRepresentation = NSBitmapImageRep(data: tiffData) else {
-      return
+    func savePNG(imageName: String, path: URL) {
+      guard let image = NSImage(named: imageName) else { return }
+      guard let tiffData = image.tiffRepresentation else { return }
+      guard let imageRepresentation = NSBitmapImageRep(data: tiffData) else {
+        return
+      }
+      guard let pngData = imageRepresentation.representation(using: .png, properties: [:]) else {
+        return
+      }
+      try? pngData.write(to: path)
     }
-    guard let pngData = imageRepresentation.representation(using: .png, properties: [:]) else {
-      return
-    }
-    try? pngData.write(to: path)
-  }
   #endif
 
+  private func openImagePreviewer() {
+    if BBCodeContext.shared.image.delegateImagePreviwer {
+      BBCodeContext.shared.image.imagePreviewerDelegate(url)
+      return
+    }
+    showPreview = true
+  }
+
   var body: some View {
-    let webImage = WebImage(url: url) { image in
+    if isInLink {
+      webImageView
+    } else {
+      webImageView
+        .onTapGesture {
+          if failed {
+            return
+          }
+          if !BBCodeContext.shared.image.enableImagePreviewer {
+            return
+          }
+          openImagePreviewer()
+        }
+      #if os(iOS)
+        .fullScreenCover(isPresented: $showPreview) {
+          ImagePreviewer(url: url)
+        }
+      #else
+        .sheet(isPresented: $showPreview) {
+          ImagePreviewer(url: url)
+        }
+      #endif
+    }
+  }
+
+  var webImageView: some View {
+    WebImage(url: url) { image in
       image.resizable()
     } placeholder: {
       if failed {
@@ -113,78 +148,25 @@ struct ImageView: View {
     .contextMenu {
       if BBCodeContext.shared.image.enableContextMenu {
         Button {
-        #if canImport(UIKit)
-          saveImage()
-        #elseif canImport(AppKit)
-          if let path = showSavePanel() {
-            savePNG(imageName: url.lastPathComponent, path: path)
-          }
-        #endif
-      } label: {
-        Label("保存", systemImage: "square.and.arrow.down")
-      }
-      if !isInLink {
-        Button {
-          showPreview = true
+          #if canImport(UIKit)
+            saveImage()
+          #elseif canImport(AppKit)
+            if let path = showSavePanel() {
+              savePNG(imageName: url.lastPathComponent, path: path)
+            }
+          #endif
         } label: {
-          Label("预览", systemImage: "eye")
+          Label("保存", systemImage: "square.and.arrow.down")
         }
+        if !isInLink {
+          Button {
+            showPreview = true
+          } label: {
+            Label("预览", systemImage: "eye")
+          }
+        }
+        ShareLink(item: url)
       }
-      ShareLink(item: url)
-    }
-
-    if isInLink {
-      webImage
-    } else {
-      webImage
-        .onTapGesture {
-          if failed {
-            return
-          }
-          if !BBCodeContext.shared.image.enableImagePreviewer {
-             return
-          }
-          openImagePreviewer()
-        }
-        #if os(iOS)
-          .fullScreenCover(isPresented: $showPreview) {
-            ImagePreviewer(url: url)
-          }
-        #else
-          .sheet(isPresented: $showPreview) {
-            ImagePreviewer(url: url)
-          }
-        #endif
     }
   }
-  private func openImagePreviewer() {
-      if BBCodeContext.shared.image.delegateImagePreviwer {
-        BBCodeContext.shared.image.imagePreviewerDelegate(url)
-        return
-      }
-      showPreview = true
-    }
-}
-
-#Preview {
-  struct Image_Preview: View {
-    init() {
-      BBCodeContext.shared.image.enableContextMenu = false
-      BBCodeContext.shared.image.enableImagePreviewer = true
-    }
-
-    var body: some View {
-      VStack {
-        ImageView(url: URL(string: "https://images.cnblogs.com/cnblogs_com/blogs/770567/galleries/2319749/o_250711175155_111.gif")!)
-
-        VStack {
-          ImagePreviewer(url: URL(string: "https://images.cnblogs.com/cnblogs_com/blogs/770567/galleries/2319749/o_250711175155_111.gif")!)
-        }
-        .background(.blue)
-      }
-      .frame(width: 600, height: 900)
-    }
-  }
-
-  return Image_Preview()
 }

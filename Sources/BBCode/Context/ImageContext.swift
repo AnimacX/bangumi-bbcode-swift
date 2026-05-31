@@ -10,5 +10,6 @@ public final class ImageContext {
     public var enableContextMenu = true
     public var enableImagePreviewer = true
     public var delegateImagePreviwer = false
+    public var enableControlBar = false
     public var imagePreviewerDelegate: (URL) -> Void = { _ in }
 }

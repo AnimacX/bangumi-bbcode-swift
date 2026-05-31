@@ -1,3 +1,10 @@
+//
+//  ImagePreviewer.swift
+//  BBCode
+//
+//  Created by 显卡的香气 on 2026/5/31.
+//
+
 import Foundation
 import SDWebImageSwiftUI
 import SwiftUI
@@ -43,7 +50,7 @@ public struct ImagePreviewer: View {
               .tint(.white)
           }
         }
-        .onFailure { error in
+        .onFailure { _ in
           failed = true
         }
         .indicator(.activity)
@@ -67,38 +74,41 @@ public struct ImagePreviewer: View {
         }
 
         // Top Control Bar
-        VStack {
-          HStack(spacing: 16) {
-            Button(action: {
-              dismiss()
-            }) {
-              Image(systemName: "xmark")
-                .foregroundColor(.white)
-            }
+        if BBCodeContext.shared.image.enableControlBar {
+          VStack {
+            HStack(spacing: 16) {
+              Button(action: {
+                dismiss()
+              }) {
+                Image(systemName: "xmark")
+                  .foregroundColor(.primary)
+              }
 
+              Spacer()
+
+              ShareLink(item: url) {
+                Image(systemName: "square.and.arrow.up")
+                  .foregroundColor(.primary)
+              }
+              #if canImport(UIKit)
+                Button(action: {
+                  saveImage()
+                }) {
+                  Image(systemName: "square.and.arrow.down")
+                    .foregroundColor(.white)
+                }
+              #endif
+            }
+            .adaptiveButtonStyle(.bordered)
+            .padding(.horizontal, 20)
+            .padding(.vertical, 12)
             Spacer()
-
-            ShareLink(item: url) {
-              Image(systemName: "square.and.arrow.up")
-                .foregroundColor(.white)
-            }
-
-            Button(action: {
-              saveImage()
-            }) {
-              Image(systemName: "square.and.arrow.down")
-                .foregroundColor(.white)
-            }
           }
-          .adaptiveButtonStyle(.bordered)
-          .padding(.horizontal, 20)
-          .padding(.vertical, 12)
-          Spacer()
+          .padding(.top, proxy.safeAreaInsets.top)
+          .opacity(showControls ? 1 : 0)
+          .animation(.easeInOut(duration: 0.2), value: showControls)
+          .allowsHitTesting(showControls)
         }
-        .padding(.top, proxy.safeAreaInsets.top)
-        .opacity(showControls ? 1 : 0)
-        .animation(.easeInOut(duration: 0.2), value: showControls)
-        .allowsHitTesting(showControls)
       }
       .frame(maxWidth: .infinity, maxHeight: .infinity)
       .edgesIgnoringSafeArea(.all)
@@ -108,12 +118,12 @@ public struct ImagePreviewer: View {
   private func makeMagnificationGesture(size: CGSize) -> some Gesture {
     MagnificationGesture()
       .onChanged { value in
-        let delta = value / lastScale
+        let delta = lastScale == 0 ? 0 : value / lastScale
         lastScale = value
 
         // To minimize jittering
         if abs(1 - delta) > 0.01 {
-          scale *= delta
+          scale = max(scale * delta, 0.05)
         }
       }
       .onEnded { _ in
@@ -201,6 +211,29 @@ public struct ImagePreviewer: View {
         offset = newOffset
       }
     }
-    self.lastTranslation = .zero
+    lastTranslation = .zero
   }
+}
+
+#Preview {
+  struct Image_Preview: View {
+    init() {
+      BBCodeContext.shared.image.enableContextMenu = false
+      BBCodeContext.shared.image.enableImagePreviewer = true
+    }
+
+    var body: some View {
+      VStack {
+        ImageView(url: URL(string: "https://images.cnblogs.com/cnblogs_com/blogs/770567/galleries/2319749/o_250711175155_111.gif")!)
+
+        VStack {
+          ImagePreviewer(url: URL(string: "https://images.cnblogs.com/cnblogs_com/blogs/770567/galleries/2319749/o_250711175155_111.gif")!)
+        }
+        .background(.blue)
+      }
+      .frame(width: 600, height: 900)
+    }
+  }
+
+  return Image_Preview()
 }

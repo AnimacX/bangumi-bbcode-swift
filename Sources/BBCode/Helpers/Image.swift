@@ -23,6 +23,14 @@ extension Image {
         return
       }
       self.init(uiImage: image)
+    #elseif canImport(AppKit)
+      guard let path = Bundle.module.path(forResource: name, ofType: type),
+            let image = NSImage(contentsOfFile: path)
+      else {
+        self.init(name)
+        return
+      }
+      self.init(nsImage: image)
     #else
       self.init(systemName: "photo")
     #endif
@@ -73,23 +81,23 @@ struct ImageView: View {
       let response = savePanel.runModal()
       return response == .OK ? savePanel.url : nil
     }
-    
+
     func parseFileType(_ name: String) -> NSBitmapImageRep.FileType {
-        let ext = (name as NSString).pathExtension.lowercased()
-        switch ext {
-        case "png":
-            return .png
-        case "jpg", "jpeg":
-            return .jpeg
-        case "bmp":
-            return .bmp
-        case "gif":
-            return .gif
-        case "tiff":
-            return .tiff
-        default:
-            return .jpeg2000
-        }
+      let ext = (name as NSString).pathExtension.lowercased()
+      switch ext {
+      case "png":
+        return .png
+      case "jpg", "jpeg":
+        return .jpeg
+      case "bmp":
+        return .bmp
+      case "gif":
+        return .gif
+      case "tiff":
+        return .tiff
+      default:
+        return .jpeg2000
+      }
     }
 
     func savePNG(imageName: String, path: URL) {
@@ -132,9 +140,9 @@ struct ImageView: View {
           ImagePreviewer(url: url)
         }
       #else
-        .sheet(isPresented: $showPreview) {
-          ImagePreviewer(url: url)
-        }
+          .sheet(isPresented: $showPreview) {
+            ImagePreviewer(url: url)
+          }
       #endif
     }
   }

@@ -31,9 +31,11 @@ struct MaskView<Content: View>: View {
       .onTapGesture {
         revealed = true
       }
+      #if !os(tvOS)
       .onHover { hovering in
         guard BBCodeContext.shared.mask.enableHovering else { return }
         revealed = hovering
       }
+      #endif
   }
 }

@@ -1,4 +1,4 @@
-#if os(iOS)
+#if os(iOS) || os(tvOS)
   import SwiftUI
 
   public struct BBCodeUITextView: UIViewRepresentable {
@@ -16,7 +16,9 @@
 
     public func makeUIView(context: UIViewRepresentableContext<Self>) -> UITextView {
       let view = UITextView(frame: .zero)
+      #if !os(tvOS)
       view.isEditable = false
+      #endif
       view.isSelectable = true
       view.isScrollEnabled = false
       view.textContainer.lineFragmentPadding = 0

@@ -64,7 +64,7 @@ public struct ImagePreviewer: View {
         .scaleEffect(scale)
         .offset(x: offset.x + dragOffset.width, y: offset.y + dragOffset.height)
         .opacity(dragOffset.height > 0 ? max(0.3, 1 - abs(dragOffset.height) / 300.0) : 1)
-#if canImport(UIKit)
+#if os(iOS)
         .gesture(
             SimultaneousGesture(
                 SimultaneousGesture(
@@ -74,7 +74,7 @@ public struct ImagePreviewer: View {
                 makeSwipeDownGesture()
             )
         )
-#else
+#elseif os(macOS)
         .gesture(
             SimultaneousGesture(
                 makeMagnificationGesture(size: proxy.size),
@@ -101,11 +101,13 @@ public struct ImagePreviewer: View {
 
               Spacer()
 
+              #if !os(tvOS)
               ShareLink(item: url) {
                 Image(systemName: "square.and.arrow.up")
                   .foregroundColor(.primary)
               }
-              #if canImport(UIKit)
+              #endif
+              #if os(iOS)
                 Button(action: {
                   saveImage()
                 }) {
@@ -130,6 +132,7 @@ public struct ImagePreviewer: View {
     }
   }
 
+  #if os(iOS) || os(macOS)
   private func makeMagnificationGesture(size: CGSize) -> some Gesture {
     MagnificationGesture()
       .onChanged { value in
@@ -167,7 +170,9 @@ public struct ImagePreviewer: View {
         adjustMaxOffset(size: size)
       }
   }
+  #endif
 
+  #if os(iOS)
   private func makeSwipeDownGesture() -> some Gesture {
     DragGesture()
       .onChanged { value in
@@ -195,9 +200,10 @@ public struct ImagePreviewer: View {
         }
       }
   }
+  #endif
 
   private func saveImage() {
-    #if canImport(UIKit)
+    #if os(iOS)
       Task {
         guard let data = try? await URLSession.shared.data(from: url).0 else { return }
         guard let img = UIImage(data: data) else { return }

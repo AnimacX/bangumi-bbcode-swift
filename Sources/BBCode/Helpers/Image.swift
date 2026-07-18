@@ -60,7 +60,7 @@ struct ImageView: View {
     }
   }
 
-  #if canImport(UIKit)
+  #if os(iOS)
     func saveImage() {
       Task {
         guard let data = try? await URLSession.shared.data(from: url).0 else { return }
@@ -119,7 +119,7 @@ struct ImageView: View {
           }
           openImagePreviewer()
         }
-      #if os(iOS)
+      #if os(iOS) || os(tvOS)
         .fullScreenCover(isPresented: $showPreview) {
           ImagePreviewer(url: url)
         }
@@ -158,7 +158,7 @@ struct ImageView: View {
     .contextMenu {
       if BBCodeContext.shared.image.enableContextMenu {
         Button {
-          #if canImport(UIKit)
+          #if os(iOS)
             saveImage()
           #elseif canImport(AppKit)
             if let path = showSavePanel(fileName: url.lastPathComponent) {
@@ -175,7 +175,9 @@ struct ImageView: View {
             Label("预览", systemImage: "eye")
           }
         }
+        #if !os(tvOS)
         ShareLink(item: url)
+        #endif
       }
     }
   }

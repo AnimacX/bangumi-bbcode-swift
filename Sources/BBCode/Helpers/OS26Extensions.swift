@@ -43,7 +43,11 @@ extension View {
         case .plain:
           buttonStyle(.plain)
         case .borderless:
-          buttonStyle(.borderless)
+          if #available(tvOS 17.0, *) {
+            buttonStyle(.borderless)
+          } else {
+            buttonStyle(.plain)
+          }
         }
       }
     #else
@@ -55,7 +59,11 @@ extension View {
       case .plain:
         buttonStyle(.plain)
       case .borderless:
-        buttonStyle(.borderless)
+        if #available(tvOS 17.0, *) {
+          buttonStyle(.borderless)
+        } else {
+          buttonStyle(.plain)
+        }
       }
     #endif
   }

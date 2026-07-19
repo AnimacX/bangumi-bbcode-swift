@@ -98,6 +98,7 @@ struct ImageView: View {
   #endif
 
   private func openImagePreviewer() {
+    guard BBCodeContext.shared.image.enableImagePreviewer else { return }
     if BBCodeContext.shared.image.delegateImagePreviwer {
       BBCodeContext.shared.image.imagePreviewerDelegate(url)
       return
@@ -114,9 +115,6 @@ struct ImageView: View {
           if failed {
             return
           }
-          if !BBCodeContext.shared.image.enableImagePreviewer {
-            return
-          }
           openImagePreviewer()
         }
       #if os(iOS) || os(tvOS)
@@ -124,9 +122,9 @@ struct ImageView: View {
           ImagePreviewer(url: url)
         }
       #else
-          .sheet(isPresented: $showPreview) {
-            ImagePreviewer(url: url)
-          }
+        .sheet(isPresented: $showPreview) {
+          ImagePreviewer(url: url)
+        }
       #endif
     }
   }
@@ -157,6 +155,7 @@ struct ImageView: View {
     .frame(maxWidth: width)
     .contextMenu {
       if BBCodeContext.shared.image.enableContextMenu {
+#if !os(tvOS)
         Button {
           #if os(iOS)
             saveImage()
@@ -168,16 +167,16 @@ struct ImageView: View {
         } label: {
           Label("保存", systemImage: "square.and.arrow.down")
         }
+
+        ShareLink(item: url)
+#endif
         if !isInLink {
           Button {
-            showPreview = true
+            openImagePreviewer()
           } label: {
             Label("预览", systemImage: "eye")
           }
         }
-        #if !os(tvOS)
-        ShareLink(item: url)
-        #endif
       }
     }
   }

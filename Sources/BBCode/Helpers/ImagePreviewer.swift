@@ -10,6 +10,8 @@ import SDWebImageSwiftUI
 import SwiftUI
 
 public struct ImagePreviewer: View {
+  private static let dragSensitivity: CGFloat = 0.5
+
   public let url: URL
   public let contentMode: ContentMode
   public var onImageLoaded: ((CGSize) -> Void) = { _ in }
@@ -160,8 +162,8 @@ public struct ImagePreviewer: View {
       .onChanged { value in
         // Handle drag for any scale level
         let diff = CGPoint(
-          x: value.translation.width - lastTranslation.width,
-          y: value.translation.height - lastTranslation.height
+          x: (value.translation.width - lastTranslation.width) * Self.dragSensitivity,
+          y: (value.translation.height - lastTranslation.height) * Self.dragSensitivity
         )
         offset = .init(x: offset.x + diff.x, y: offset.y + diff.y)
         lastTranslation = value.translation
